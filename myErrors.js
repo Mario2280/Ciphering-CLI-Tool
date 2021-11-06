@@ -27,7 +27,11 @@ class RepeatingOptionsError extends ValidationError {
 
 class ExtraArgumentsError extends ValidationError {
     constructor(Args) {
-        super(`Invalid arguments found: ${Args}`);
+        if(Args.length == 0){
+            super(`Some options have not values`);
+        } else{
+            super(`Invalid arguments found: ${Args.splice(0,3)}`);
+        }        
     }
 }
 
@@ -49,7 +53,7 @@ function validationArgv() {
                 throw new RepeatingOptionsError('CONFIG');
             } else {
                 map.set("c", id);
-                argCount += 2;
+                argCount += 1;
             }
         }
 
@@ -58,7 +62,7 @@ function validationArgv() {
                 throw new RepeatingOptionsError("INPUT");
             } else {
                 map.set("i", id);
-                argCount += 2;
+                argCount += 1;
             }
         }
 
@@ -67,7 +71,7 @@ function validationArgv() {
                 throw new RepeatingOptionsError("OUTPUT");
             } else {
                 map.set("o", id);
-                argCount += 2;
+                argCount += 1;
             }
         }
     });
@@ -75,7 +79,7 @@ function validationArgv() {
         throw new ArgRequiredError('CONFIG');
     }
     //Костыль на отсев лишних аргументов
-    if (argCount != process.argv.length - 2) {
+    if (argCount * 2 != process.argv.length - 2) {
         let tempArr = [],
             extraArg = [];
         for (let el of map.values()) {
@@ -124,3 +128,5 @@ module.exports = {
     ExtraArgumentsError,
     InvalidConfigError
 };
+
+//Надо вынести логику
