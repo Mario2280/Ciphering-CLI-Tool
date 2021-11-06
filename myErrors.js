@@ -6,7 +6,7 @@ const fs = require('fs');
 //эту однотипную фигню не обессудьте вас ждёт говнокод
 class ValidationError extends Error {
     constructor(message) {
-        Error.stackTraceLimit = 1;
+        Error.stackTraceLimit = 0;
         super(message);
         this.name = this.constructor.name;
         this.code = 1;
@@ -35,11 +35,34 @@ class ExtraArgumentsError extends ValidationError {
     }
 }
 
-class InvalidConfigError extends ValidationError {
-    constructor(someData) {
-        super(`Config set incorrectly: ${someData}`);
+class PayloadError extends ValidationError {
+    constructor(message, payload){
+        super(`${message} ${payload}`);
+        this.payload = payload;
     }
 }
+
+class InvalidPath extends PayloadError {   
+}
+
+class NotExistFileError extends PayloadError {   
+}
+
+class InvalidConfigError extends PayloadError {
+}
+
+function checkPath(path) {
+    if (fs.existsSync(path)) {
+        fs.stat(path, (err, stats) => {
+            if(!stats.isFile()){
+                throw new NotExistFileError("This is not a file", path);
+            }
+        });
+    } else {
+        throw new InvalidPath("Nothing exists along the specified path:", path);
+    }
+}
+
 // Search and validation option headers
 function validationArgv() {
     let map = new Map();
@@ -100,33 +123,19 @@ function validationArgv() {
     map.forEach((value, key) => {
         let arg = process.argv[map.get(key) + 1];
         if (key == "o" || key == "i") {
-            if (fs.existsSync(arg)) {
-                if (path.extname(arg) != ".txt") {
-                    //Логика перенаправления вывода
-                } else {
-                    throw new Error("This is not a file");
-                }
-            } else {
-                throw new Error("Invalid path");
-            }
+            checkPath(path.resolve(arg));
         } else {
-            //Регулярочка с пробелом в конце(костыль - не знал как без пробела)
+            //Регулярочка
             if (`${arg} `.match(cipherSequenceValidation) == null) {
-                throw new InvalidConfigError(arg);
+                throw new InvalidConfigError("Config set incorrectly:", arg);
             }
         }
-
-
     });
+    //Если все проверки пройдены возвращаем map с флагами и их значениями(индексами массива process)
+    return map;
 }
 
 module.exports = {
-    validationArgv,
-    ValidationError,
-    ArgRequiredError,
-    RepeatingOptionsError,
-    ExtraArgumentsError,
-    InvalidConfigError
+    validationArgv
 };
 
-//Надо вынести логику
