@@ -1,9 +1,12 @@
 const path = require('path');
 const fs = require('fs');
-const cipherSequenceValidation = /(C1|C0|R1|R0|A)((-C1|-C0|-R1|-R0|-A))*/gm;
 
+//Не совсем понял что подразумевалось
+//под пользовательскими ошибками так что добавил
+//эту однотипную фигню не обессудьте вас ждёт говнокод
 class ValidationError extends Error {
-    constructor(message){
+    constructor(message) {
+        Error.stackTraceLimit = 1;
         super(message);
         this.name = this.constructor.name;
         this.code = 1;
@@ -11,73 +14,113 @@ class ValidationError extends Error {
 }
 
 class ArgRequiredError extends ValidationError {
-    constructor(Arg){
-        super(`Отсутствует обязательный аргумент: ${Arg}`);
-            this.Arg = Arg;
+    constructor(Arg) {
+        super(`Required argument missing: ${Arg}`);
     }
 }
 
+class RepeatingOptionsError extends ValidationError {
+    constructor(Arg) {
+        super(`The option ${Arg} is duplicated`);
+    }
+}
+
+class ExtraArgumentsError extends ValidationError {
+    constructor(Args) {
+        super(`Invalid arguments found: ${Args}`);
+    }
+}
+
+class InvalidConfigError extends ValidationError {
+    constructor(someData) {
+        super(`Config set incorrectly: ${someData}`);
+    }
+}
 // Search and validation option headers
-function validationArgv(){
+function validationArgv() {
     let map = new Map();
-    map.set('argCount', 0);    
-    
+    let argCount = 0;
+    const cipherSequenceValidation = /(C1|C0|R1|R0|A)((-C1|-C0|-R1|-R0|-A))*\s/gm;
+    //Поиск всех опций и вынесение их в мап
     process.argv.forEach((item, id) => {
-        
-        if(item ==="-c" || item ==="--config"){
-            if(map.has("c")){
-                throw new Error("Много конфигов");
+
+        if (item === "-c" || item === "--config") {
+            if (map.has("c")) {
+                throw new RepeatingOptionsError('CONFIG');
             } else {
                 map.set("c", id);
-                map.set('argCount', map.get('argCount') + 2);
+                argCount += 2;
             }
         }
 
-        if(item ==="-i" || item ==="--input"){
-            if(map.has("i")){
-                throw new Error("Много опций ввода");
+        if (item === "-i" || item === "--input") {
+            if (map.has("i")) {
+                throw new RepeatingOptionsError("INPUT");
             } else {
                 map.set("i", id);
-                map.set('argCount', map.get('argCount') + 2);
+                argCount += 2;
             }
         }
 
-        if(item ==="-o" || item ==="--output"){
-            if(map.has("o")){
-                throw new Error("Много опций вывода");
+        if (item === "-o" || item === "--output") {
+            if (map.has("o")) {
+                throw new RepeatingOptionsError("OUTPUT");
             } else {
                 map.set("o", id);
-                map.set('argCount', map.get('argCount') + 2);
+                argCount += 2;
             }
-        }    
+        }
     });
-    if(map.get('argCount') != process.argv.length - 2){
-        throw new Error("Обнаружены нераспознанные аргументы");
+    if (!map.has('c')) {
+        throw new ArgRequiredError('CONFIG');
     }
-    map.delete('argCount');
-    map.forEach((value,key) => {
+    //Костыль на отсев лишних аргументов
+    if (argCount != process.argv.length - 2) {
+        let tempArr = [],
+            extraArg = [];
+        for (let el of map.values()) {
+            tempArr.push(el, el + 1);
+        }
+        process.argv.forEach((item, id) => {
+            if (id == 0 || id == 1) {
+                return;
+            }
+            if (!tempArr.includes(id)) {
+                extraArg.push(item);
+            }
+
+        });
+        throw new ExtraArgumentsError(extraArg);
+    }
+    //Проверка значений опций
+    map.forEach((value, key) => {
         let arg = process.argv[map.get(key) + 1];
-        if(key == "o" || key == "i"){           
-            if(fs.existsSync(arg)){
-                if(path.extname(arg) != ".txt"){
+        if (key == "o" || key == "i") {
+            if (fs.existsSync(arg)) {
+                if (path.extname(arg) != ".txt") {
                     //Логика перенаправления вывода
-                } else{
-                    throw new Error("Не текстовый файл");
+                } else {
+                    throw new Error("This is not a file");
                 }
             } else {
-                throw new Error("НЕверный путь");
+                throw new Error("Invalid path");
             }
-        }   else{
-            if(arg.match(cipherSequenceValidation) == null){
-                throw new Error("НЕверная последовательность шифров");
+        } else {
+            //Регулярочка с пробелом в конце(костыль - не знал как без пробела)
+            if (`${arg} `.match(cipherSequenceValidation) == null) {
+                throw new InvalidConfigError(arg);
             }
         }
 
-        
+
     });
 }
 
-
-
-
-
+module.exports = {
+    validationArgv,
+    ValidationError,
+    ArgRequiredError,
+    RepeatingOptionsError,
+    ExtraArgumentsError,
+    InvalidConfigError
+};
