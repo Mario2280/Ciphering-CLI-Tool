@@ -4,6 +4,9 @@ const {
     Transform,
 } = require('stream');
 const fs = require('fs');
+const {
+    isBuffer
+} = require('util');
 
 class MyReadStream extends Readable {
     constructor(filename, options = {}) {
@@ -81,9 +84,20 @@ class myTransform extends Transform {
     }
 
     _transform(chunk, encoding, callback) {
-
-
-        this.push(chunk.toUpperCase());
+        if (chunk) {
+            //console.log(chunk.toString('utf8'));
+            if (this.funcAndArgsObj.offset) {
+                this.push(this.funcAndArgsObj.transform(
+                    this.funcAndArgsObj.encoding,
+                    chunk.toString('utf8'),
+                    this.funcAndArgsObj.offset
+                ));
+            } else {
+                this.push(this.funcAndArgsObj.transform(
+                    chunk.toString('utf8'),
+                ));
+            }
+        }
         callback();
     }
 }
@@ -91,4 +105,5 @@ class myTransform extends Transform {
 module.exports = {
     MyWriteStream,
     MyReadStream,
+    myTransform
 }

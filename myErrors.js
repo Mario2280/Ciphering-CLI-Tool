@@ -1,9 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 
-//Не совсем понял что подразумевалось
-//под пользовательскими ошибками так что добавил
-//эту однотипную фигню не обессудьте вас ждёт говнокод
+//Не обессудьте вас ждёт говнокод)
 class ValidationError extends Error {
     constructor(message) {
         Error.stackTraceLimit = 0;
@@ -27,39 +25,36 @@ class RepeatingOptionsError extends ValidationError {
 
 class ExtraArgumentsError extends ValidationError {
     constructor(Args) {
-        if(Args.length == 0){
+        if (Args.length == 0) {
             super(`Some options have not values`);
-        } else{
+        } else {
             super(`Invalid arguments found: ${Args.splice(0,3)}`);
-        }        
+        }
     }
 }
 
 class PayloadError extends ValidationError {
-    constructor(message, payload){
+    constructor(message, payload) {
         super(`${message} ${payload}`);
         this.payload = payload;
     }
 }
 
-class InvalidPath extends PayloadError {   
-}
+class InvalidPathError extends PayloadError {}
 
-class NotExistFileError extends PayloadError {   
-}
+class NotExistFileError extends PayloadError {}
 
-class InvalidConfigError extends PayloadError {
-}
+class InvalidConfigError extends PayloadError {}
 
 function checkPath(path) {
     if (fs.existsSync(path)) {
         fs.stat(path, (err, stats) => {
-            if(!stats.isFile()){
+            if (!stats.isFile()) {
                 throw new NotExistFileError("This is not a file", path);
             }
         });
     } else {
-        throw new InvalidPath("Nothing exists along the specified path:", path);
+        throw new InvalidPathError("Nothing exists along the specified path:", path);
     }
 }
 
@@ -138,4 +133,3 @@ function validationArgv() {
 module.exports = {
     validationArgv
 };
-
