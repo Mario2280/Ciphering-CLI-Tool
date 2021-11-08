@@ -3,6 +3,10 @@ const {
     Writable,
     Transform,
 } = require('stream');
+const {
+    C,
+    A
+} = require('./cipher');
 const fs = require('fs');
 
 class MyReadStream extends Readable {
@@ -70,7 +74,49 @@ class MyWriteStream extends Writable {
     }
 }
 
-class myTransform extends Transform {
+class myTransformC extends Transform {
+
+    constructor(encode, options = {}) {
+        options = Object.assign({}, options, {
+            decodeStrings: false
+        });
+        super(options);
+        this.encode = encode;
+    }
+
+    _transform(chunk, encoding, callback) {
+        if (chunk) {
+            //console.log(chunk.toString('utf8'));
+            this.push(C(this.encode,
+                chunk.toString('utf8'),
+                1));
+        }
+        callback();
+    }
+}
+
+class myTransformR extends Transform {
+
+    constructor(encode, options = {}) {
+        options = Object.assign({}, options, {
+            decodeStrings: false
+        });
+        super(options);
+        this.encode = encode;
+    }
+
+    _transform(chunk, encoding, callback) {
+        if (chunk) {
+            //console.log(chunk.toString('utf8'));
+            this.push(C(this.encode,
+                chunk.toString('utf8'),
+                8));
+        }
+        callback();
+    }
+}
+
+class myTransformA extends Transform {
 
     constructor(funcAndArgsObj, options = {}) {
         options = Object.assign({}, options, {
@@ -83,17 +129,9 @@ class myTransform extends Transform {
     _transform(chunk, encoding, callback) {
         if (chunk) {
             //console.log(chunk.toString('utf8'));
-            if (this.funcAndArgsObj.offset) {
-                this.push(this.funcAndArgsObj.transform(
-                    this.funcAndArgsObj.encoding,
-                    chunk.toString('utf8'),
-                    this.funcAndArgsObj.offset
-                ));
-            } else {
-                this.push(this.funcAndArgsObj.transform(
-                    chunk.toString('utf8'),
-                ));
-            }
+            this.push(
+                A(chunk.toString('utf8'))
+            );
         }
         callback();
     }
@@ -102,5 +140,7 @@ class myTransform extends Transform {
 module.exports = {
     MyWriteStream,
     MyReadStream,
-    myTransform
-}
+    myTransformC,
+    myTransformR,
+    myTransformA,
+};

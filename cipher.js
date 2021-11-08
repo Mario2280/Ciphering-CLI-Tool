@@ -9,7 +9,7 @@ let isUpper = false;
 
 function C(encode, data, offset) {
     retVal = '';
-    (encode) ? null: offset = -offset;
+    (encode) ? null: offset = - offset;
     for (let el of data) {
         let index = fullalfabet.indexOf(el);
         if (index < 0) {

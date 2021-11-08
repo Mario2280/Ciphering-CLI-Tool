@@ -4,12 +4,10 @@ const {
 const {
     MyWriteStream,
     MyReadStream,
-    myTransform
+    myTransformC,
+    myTransformR,
+    myTransformA,
 } = require('./myCustomStream');
-const {
-    C,
-    A
-} = require('./cipher');
 const path = require('path');
 const {
     pipeline
@@ -28,7 +26,7 @@ map.forEach((val, key) => {
             config = process.argv[val + 1].split('-');
             break;
     }
-})
+});
 
 if (!output) {
     output = process.stdout;
@@ -37,22 +35,18 @@ if (!input) {
     input = process.stdin;
     process.stdin.resume();
 }
-class ConfigClass {
-    constructor(encoding, offset, transform) {
-        this.encoding = encoding;
-        this.offset = offset;
-        this.transform = transform;
-    }
-}
 
 config.forEach((el, id, config) => {
     //C or R
+    let encode;
     if (config[id].length == 2) {
-        arrTransform.push(new myTransform(new ConfigClass(el[1] == '1' ? true : false, el[0] == 'C' ? 1 : 8, C)));
+        config[id][1] == '1' ? encode = true : encode = false;
+        config[id][0] == 'C' ? arrTransform.push(new myTransformC(encode)) : 
+        arrTransform.push(new myTransformR(encode));
     } else {
-        arrTransform.push(new myTransform(new ConfigClass(null, null, A)));
+        arrTransform.push(new myTransformA());
     }
-})
+});
 
 function callback() {
     console.log('!Success!');
