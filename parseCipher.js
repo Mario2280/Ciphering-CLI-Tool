@@ -52,15 +52,15 @@ try {
     }
     if (!input) {
         input = process.stdin;
-        process.stdin.resume();
+        process.stdin.resume();        
     }
 
     config.forEach((el, id, config) => {
         //C or R
         let encode;
-        if (config[id].length == 2) {
-            config[id][1] == '1' ? encode = true : encode = false;
-            config[id][0] == 'C' ? arrTransform.push(new myTransformC(encode)) :
+        if (el.length == 2) {
+            el[1] == '1' ? encode = true : encode = false;
+            el[0] == 'C' ? arrTransform.push(new myTransformC(encode)) :
                 arrTransform.push(new myTransformR(encode));
         } else {
             arrTransform.push(new myTransformA());
@@ -74,5 +74,8 @@ try {
         process.stderr.write(err.message);
         process.stderr.write(`\nThe program exited with code = ${err.code}`);
         process.exit(err.code);
+    } else {
+        process.stderr.write(err.message);
+        process.exit(999);
     }
 }
