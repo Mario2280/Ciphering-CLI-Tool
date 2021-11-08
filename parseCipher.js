@@ -1,5 +1,6 @@
 const {
-    validationArgv
+    validationArgv,
+    ValidationError
 } = require('./myErrors');
 const {
     MyWriteStream,
@@ -12,8 +13,26 @@ const path = require('path');
 const {
     pipeline
 } = require('stream');
-let map = validationArgv();
+
+
 let input, output, config, arrTransform = [];
+function callback() {
+    console.log('!Success!');
+}
+async function run() {
+    pipeline(
+        input,
+        ...arrTransform,
+        output,
+        callback
+    );
+}
+
+try{
+    let map = validationArgv();
+
+
+
 map.forEach((val, key) => {
     switch (key) {
         case 'o':
@@ -47,16 +66,12 @@ config.forEach((el, id, config) => {
         arrTransform.push(new myTransformA());
     }
 });
-
-function callback() {
-    console.log('!Success!');
-}
-async function run() {
-    pipeline(
-        input,
-        ...arrTransform,
-        output,
-        callback
-    );
-}
 run();
+} catch(err){
+    if(err instanceof ValidationError){
+        process.stderr.write(err.message);
+        process.stderr.write(`\nThe program exited with code = ${err.code}`);
+        process.exit(err.code);
+    }
+}
+

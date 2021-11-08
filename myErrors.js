@@ -131,5 +131,6 @@ function validationArgv() {
 }
 
 module.exports = {
-    validationArgv
+    validationArgv,
+    ValidationError
 };
