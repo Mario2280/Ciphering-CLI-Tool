@@ -4,9 +4,6 @@ const {
     Transform,
 } = require('stream');
 const fs = require('fs');
-const {
-    isBuffer
-} = require('util');
 
 class MyReadStream extends Readable {
     constructor(filename, options = {}) {
