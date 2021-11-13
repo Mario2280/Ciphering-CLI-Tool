@@ -52,7 +52,12 @@ try {
     }
     if (!input) {
         input = process.stdin;
-        process.stdin.resume();        
+        process.stdin.resume();
+        process.stdin.on('data', (data) => {
+            if(data.toString().match('exit')){
+                process.exit(0);
+            }
+        });
     }
 
     config.forEach((el, id, config) => {
@@ -79,3 +84,4 @@ try {
         process.exit(999);
     }
 }
+
