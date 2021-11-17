@@ -62,7 +62,7 @@ function checkPath(path) {
 function validationArgv() {
     let map = new Map();
     let argCount = 0;
-    const cipherSequenceValidation = /(C1|C0|R1|R0|A)((-C1|-C0|-R1|-R0|-A))*\s/gm;
+    const cipherSequenceValidation = /\s+(C1|C0|R1|R0|A)((-C1|-C0|-R1|-R0|-A))*\s/gm;
     //Поиск всех опций и вынесение их в мап
     process.argv.forEach((item, id) => {
 
@@ -121,7 +121,7 @@ function validationArgv() {
             checkPath(path.resolve(arg));
         } else {
             //Регулярочка
-            if (`${arg} `.match(cipherSequenceValidation) == null) {
+            if (` ${arg} `.match(cipherSequenceValidation) == null) {
                 throw new InvalidConfigError("Config set incorrectly:", arg);
             }
         }
