@@ -1,3 +1,6 @@
 1.txt
 2.txt
 index.js
+node_modules
+package-lock.json
+coverage
