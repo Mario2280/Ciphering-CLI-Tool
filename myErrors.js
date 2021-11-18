@@ -48,11 +48,14 @@ class InvalidConfigError extends PayloadError {}
 
 function checkPath(path) {
     if (fs.existsSync(path)) {
-        fs.stat(path, (err, stats) => {
-            if (!stats.isFile()) {
-                throw new NotExistFileError("This is not a file", path);
-            }
-        });
+        if(!fs.statSync(path).isFile()){
+            throw new NotExistFileError("This is not a file", path);
+        }
+        // fs.stat(path, (err, stats) => {
+        //     if (!stats.isFile()) {
+        //         
+        //     }
+        // });
     } else {
         throw new InvalidPathError("Nothing exists along the specified path:", path);
     }
@@ -132,5 +135,6 @@ function validationArgv() {
 
 module.exports = {
     validationArgv,
-    ValidationError
+    ValidationError,
+    checkPath
 };
