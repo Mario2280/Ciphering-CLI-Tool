@@ -53,7 +53,7 @@ function checkPath(path) {
         }
         // fs.stat(path, (err, stats) => {
         //     if (!stats.isFile()) {
-        //         
+                
         //     }
         // });
     } else {

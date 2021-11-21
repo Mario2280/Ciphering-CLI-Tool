@@ -53,7 +53,7 @@ describe('function validationArgv ', () => {
     });
 
     test('return value', () => {
-        process.argv.splice(2, process.argv.length - 2, ...'-c C1-A-R0 -i ./myErrors.js'.split(' '));
+        process.argv.splice(2, process.argv.length - 2, ...'-c C1-A-R0 -i ./input.txt'.split(' '));
         let result = validationArgv();
 
         expect(Object.fromEntries(result)).toStrictEqual({
