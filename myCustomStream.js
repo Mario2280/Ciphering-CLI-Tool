@@ -14,6 +14,7 @@ class MyReadStream extends Readable {
     constructor(filename, options = {}) {
         super(options);
         this.filename = filename;
+        this.setMaxListeners(20);
         this.fd = null;
     }
     _construct(callback) {
@@ -53,6 +54,7 @@ class MyReadStream extends Readable {
 class MyWriteStream extends Writable {
     constructor(filename) {
         super();
+        this.setMaxListeners(20);
         this.filename = filename;
     }
     _construct(callback) {
@@ -93,6 +95,7 @@ class myTransformC extends Transform {
             decodeStrings: false
         });
         super(options);
+        this.setMaxListeners(20);
         this.encode = encode;
     }
 
@@ -114,6 +117,7 @@ class myTransformR extends Transform {
             decodeStrings: false
         });
         super(options);
+        this.setMaxListeners(20);
         this.encode = encode;
     }
 
@@ -135,6 +139,7 @@ class myTransformA extends Transform {
             decodeStrings: false
         });
         super(options);
+        this.setMaxListeners(20);
         this.funcAndArgsObj = funcAndArgsObj;
     }
 
