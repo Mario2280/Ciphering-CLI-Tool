@@ -8,11 +8,13 @@ const {
     A
 } = require('./cipher');
 const fs = require('fs');
+//const fsP = require('fs/promises');
 
 class MyReadStream extends Readable {
     constructor(filename, options = {}) {
         super(options);
         this.filename = filename;
+        this.setMaxListeners(20);
         this.fd = null;
     }
     _construct(callback) {
@@ -40,7 +42,9 @@ class MyReadStream extends Readable {
     }
     _destroy(err, callback) {
         if (this.fd) {
-            fs.close(this.fd, (er) => callback(er || err));
+            fs.closeSync(this.fd);
+            callback();
+            //fs.close(this.fd, (er) => callback(er || err));
         } else {
             callback(err);
         }
@@ -50,9 +54,17 @@ class MyReadStream extends Readable {
 class MyWriteStream extends Writable {
     constructor(filename) {
         super();
+        this.setMaxListeners(20);
         this.filename = filename;
     }
     _construct(callback) {
+        // this.fd = fs.openSync(this.filename, 'a');
+        // callback();
+        // fsP.open(this.filename, 'a')
+        // .then(fd => {
+        //     this.fd = fd;
+        //     callback();
+        // }).catch(err => callback(err));
         fs.open(this.filename, 'a', (err, fd) => {
             if (err) {
                 callback(err);
@@ -67,7 +79,9 @@ class MyWriteStream extends Writable {
     }
     _destroy(err, callback) {
         if (this.fd) {
-            fs.close(this.fd, (er) => callback(er || err));
+            fs.closeSync(this.fd);
+            callback();
+            //fs.close(this.fd, (er) => callback(er || err));
         } else {
             callback(err);
         }
@@ -81,6 +95,7 @@ class myTransformC extends Transform {
             decodeStrings: false
         });
         super(options);
+        this.setMaxListeners(20);
         this.encode = encode;
     }
 
@@ -102,6 +117,7 @@ class myTransformR extends Transform {
             decodeStrings: false
         });
         super(options);
+        this.setMaxListeners(20);
         this.encode = encode;
     }
 
@@ -123,6 +139,7 @@ class myTransformA extends Transform {
             decodeStrings: false
         });
         super(options);
+        this.setMaxListeners(20);
         this.funcAndArgsObj = funcAndArgsObj;
     }
 
